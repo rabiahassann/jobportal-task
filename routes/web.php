@@ -49,7 +49,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 // Job Applicants Routes
    Route::get('/job-applicants', [JobApplicantController::class, 'index'])->name('job-applicants.index');
    Route::get('/job-applicants/{jobPost}', [JobApplicantController::class, 'show'])->name('job-applicants.show');
-   Route::post('/job-applicants/send-bulk-email', [JobApplicantController::class, 'sendBulkEmail'])->name('job-applicants.send-bulk-email');
+   Route::post('/job-applicants/{jobPost}/send-bulk-email', [JobApplicantController::class, 'sendBulkEmail'])->name('job-applicants.send-bulk-email');
    Route::get('/job-applicants/{id}/download-cv', [JobApplicantController::class, 'downloadCV'])->name('job-applicants.download-cv');
    Route::put('/job-applicants/{id}/update-status', [JobApplicantController::class, 'updateStatus'])->name('job-applicants.update-status');
 });

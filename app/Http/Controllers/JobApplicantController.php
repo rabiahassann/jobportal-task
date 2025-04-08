@@ -28,13 +28,14 @@ class JobApplicantController extends Controller
         return view('job_applicants.index', compact('applicants', 'jobPost'));
     }
 
-    public function downloadCV(JobApplicant $applicant)
+    public function downloadCV( $applicant)
     {
-        
-        if (!$applicant->cv_path) {
+       $applicant = JobApplicant::where('id',$applicant)->first();
+        if (!$applicant->resume) {
             return back()->with('error', 'CV not found');
         }
-        return response()->download(storage_path('app/' . $applicant->cv_path));
+        
+        return response()->download(storage_path('app/public/' . $applicant->resume));
     }
 
     public function updateStatus(Request $request, JobApplicant $applicant)

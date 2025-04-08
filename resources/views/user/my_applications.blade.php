@@ -4,7 +4,7 @@
             <div class="col">
                 <h3 class="page-title"> My Job Applicants</h3>
             </div>
-           
+
         </div>
     </div>
 
@@ -17,31 +17,37 @@
                             @if(isset($applications) && count($applications) > 0)
                             <thead>
                                 <tr>
-                                   
+
                                     <th>#</th>
                                     <th>Job Title</th>
                                     <th>Applied At</th>
                                     <th>Status</th>
-                                    <th class="text-center">Action</th>
+
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($applications as $applicant)
                                 <tr>
-                                   
+
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $applicant->jobPost->title }}</td>
                                     <td>{{ $applicant->created_at->format('d M Y') }}</td>
                                     <td>
-                                    {{ $applicant->status }}
+                                        <span class="badge 
+                                           @if($applicant->status == 'approved')
+                                            bg-success
+                                            @elseif($applicant->status == 'pending')
+                                            bg-warning
+                                            @elseif($applicant->status == 'rejected')
+                                            bg-danger
+                                            @else
+                                            bg-secondary
+                                            @endif">
+                                            {{ $applicant->status }}
+                                        </span>
                                     </td>
-                                    <td class="text-center">
-                                      
-                                        <a href="{{ route('job-applicants.download-cv', $applicant->id) }}" 
-                                           class="btn btn-sm bg-info-light">
-                                            <i class="fas fa-download me-1"></i> Update CV
-                                        </a>
-                                    </td>
+
+
                                 </tr>
                                 @endforeach
                             </tbody>
