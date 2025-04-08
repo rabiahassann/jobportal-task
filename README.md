@@ -52,5 +52,6 @@ Follow the steps below to set up the project locally:
 git clone https://github.com/rabiahassann/job-management-portal.git
 cd job-management-portal
 
-## Video link
+
+## loom Video link
 https://www.loom.com/share/650e4e70d9454e5ba8894d95d445516e?focus_title=1&muted=1&from_recorder=1
