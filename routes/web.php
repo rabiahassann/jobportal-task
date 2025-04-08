@@ -20,9 +20,10 @@ use App\Http\Controllers\DashboardController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::get('/', [DashboardController::class, 'home'])->name('home');
+
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -55,30 +56,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
 
 
-Route::middleware(['auth', 'role:user'])->get('/user/dashboard', function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->middleware(['auth', 'verified'])->name('user.dashboard');
+Route::middleware(['auth', 'role:user'])->prefix('user')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'userdashboard'])->name('user.dashboard');
+    Route::get('/my-applications', [JobApplicantController::class, 'myApplications'])->name('user.applications');
+    Route::post('/apply', [JobApplicantController::class, 'store'])->name('apply.job');
 });
 
 
-
-// // Test Routes
-// Route::get('/test-bulk-email', function() {
-//     $jobPost = \App\Models\JobPost::first(); 
-//     $applicants = \App\Models\JobApplicant::where('job_post_id', $jobPost->id)
-//         ->with('user')
-//         ->take(2) 
-//         ->get();
-
-//     $notification = new \App\Notifications\BulkJobApplicantEmail(
-//         'Test Email Subject',
-//         'This is a test email message for queue testing.'
-//     );
-
-//     \Illuminate\Support\Facades\Notification::send($applicants->pluck('user'), $notification);
-
-//     return 'Test emails have been queued. Check your queue worker and email inbox.';
-// })->name('test.bulk.email');
 
 require __DIR__.'/auth.php';

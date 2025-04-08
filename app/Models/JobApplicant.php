@@ -12,9 +12,6 @@ class JobApplicant extends Model
     protected $fillable = [
         'job_post_id',
         'user_id',
-        'name',
-        'email',
-        'phone',
         'resume',
         'cover_letter',
         'status'

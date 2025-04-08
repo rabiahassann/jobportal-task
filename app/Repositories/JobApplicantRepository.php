@@ -48,4 +48,9 @@ class JobApplicantRepository implements JobApplicantRepositoryInterface
     {
         return $this->update($id, ['status' => $status]);
     }
+
+    public function getUserApplications($userId)
+    {
+        return JobApplicant::where('user_id', $userId)->get();
+    }
 }

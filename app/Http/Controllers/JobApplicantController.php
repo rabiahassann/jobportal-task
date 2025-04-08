@@ -6,6 +6,7 @@ use App\Models\JobPost;
 use App\Models\JobApplicant;
 use App\Http\Requests\JobApplicantRequest;
 use Illuminate\Http\Request;
+use Auth;
 use App\Notifications\BulkJobApplicantEmail;
 use Illuminate\Support\Facades\Notification;
 
@@ -29,7 +30,6 @@ class JobApplicantController extends Controller
 
     public function downloadCV(JobApplicant $applicant)
     {
-        $this->authorize('downloadCV', $applicant);
         
         if (!$applicant->cv_path) {
             return back()->with('error', 'CV not found');
@@ -47,14 +47,22 @@ class JobApplicantController extends Controller
 
     public function store(JobApplicantRequest $request)
     {
-        $jobPost = JobPost::findOrFail($request->job_post_id);
-        $this->authorize('apply', $jobPost);
-        
+      
+        $jobPost = JobPost::findOrFail($request->job_id);
         try {
-            JobApplicant::create($request->validated());
-            return redirect()->back()->with('success', 'Application submitted successfully!');
+            $cvPath = $request->file('cv')->store('cv_uploads', 'public');
+    
+            JobApplicant::create([
+                'user_id' => auth()->id(),
+                'job_post_id' => $jobPost->id,
+                'cover_letter' => $request->cover_letter,
+                'resume' => $cvPath,
+            ]);
+            return redirect()->back()->with('alert', 'Application submitted successfully!');
+
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Something went wrong!');
+          
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
 
@@ -85,5 +93,12 @@ class JobApplicantController extends Controller
             return redirect()->route('job-applicants.show', $jobPost)
                 ->with('error', 'Failed to queue emails. Please try again.');
         }
+    }
+
+    public function myApplications()
+    {
+        $user = Auth::user();
+        $applications =JobApplicant::with('jobPost')->where('user_id',$user->id)->get();
+        return view('user.my_applications', compact('applications'));
     }
 }

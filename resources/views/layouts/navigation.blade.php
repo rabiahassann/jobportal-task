@@ -12,14 +12,24 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('dashboard')">
+                    @php
+                    $dashboardRoute = Auth::user()->role === 'admin' ? 'admin.dashboard' : 'user.dashboard';
+                    @endphp
+
+                    <x-nav-link :href="route($dashboardRoute)" :active="request()->routeIs($dashboardRoute)">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if(Auth::user()->role === 'admin' )
                     <x-nav-link :href="route('job-posts.index')" :active="request()->routeIs('job-posts.index')">
                         {{ __('Job Posts') }}
                     </x-nav-link>
+                    @else
+                    <x-nav-link :href="route('user.applications')" :active="request()->routeIs('job-posts.index')">
+                        {{ __('My Applications') }}
+                    </x-nav-link>
+                    @endif
 
-                   
+
                 </div>
             </div>
 

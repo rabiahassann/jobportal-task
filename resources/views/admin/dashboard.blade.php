@@ -35,7 +35,7 @@
                     <li class="py-3">
                         <div class="flex justify-between items-center">
                             <span class="text-gray-700">{{$post->title }} </span>
-                            <span>{{$post->category}}</span>
+                         
                             <span class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($post->created_at)->diffForHumans() }}</span>
 
                         </div>
