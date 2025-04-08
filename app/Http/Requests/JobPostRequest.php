@@ -18,6 +18,9 @@ class JobPostRequest extends FormRequest
             'salary_range' => 'required|string|max:255',
             'description' => 'required|string',
             'applied_before' => 'nullable|date',
+            'category' => 'required',
+            'job_type' => 'required',
+            'location' => 'required',
         ];
     }
 }

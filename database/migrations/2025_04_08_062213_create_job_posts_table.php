@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('job_posts', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('category');
+            $table->string('location');
+            $table->string('job_type');
             $table->string('applied_before');
             $table->text('salery_range');
             $table->string('status')->default('active');

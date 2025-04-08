@@ -2,67 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\JobPostRepositoryInterface;
-use App\Http\Requests\JobPostRequest;
 use App\Models\JobPost;
+use App\Http\Requests\JobPostRequest;
 use Illuminate\Http\Request;
 
 class JobPostController extends Controller
 {
-    protected $jobPostRepository;
-
-    public function __construct(JobPostRepositoryInterface $jobPostRepository)
+    public function __construct()
     {
-        $this->jobPostRepository = $jobPostRepository;
+        $this->authorizeResource(JobPost::class, 'jobPost');
     }
 
     public function index()
     {
-        $jobPosts = $this->jobPostRepository->all();
-        return view('job-posts.index', compact('jobPosts'));
+     
+        $jobPosts = JobPost::latest()->paginate(10);
+        return view('job_posts.index', compact('jobPosts'));
     }
 
-    
     public function create()
     {
-        return view('job-posts.create');
+        return view('job_posts.create');
     }
 
-    
     public function store(JobPostRequest $request)
     {
-        \Log::info('Job Post Store Request:', $request->all());
-        
-        try {
-            $data = $request->validated();
-            $this->jobPostRepository->create($data);
-            return redirect()->route('job-posts.index')->with('success', 'Job post created successfully');
-        } catch (\Exception $e) {
-            \Log::error('Error creating job post: ' . $e->getMessage());
-            return back()->with('error', 'Failed to create job post. Please try again.');
-        }
+        JobPost::create($request->validated());
+        return redirect()->route('job-posts.index')
+            ->with('success', 'Job post created successfully.');
     }
 
-    
-    public function edit($id)
+    public function show(JobPost $jobPost)
     {
-        $jobPost = $this->jobPostRepository->find($id);
-        return view('job-posts.edit', compact('jobPost'));
+        return view('job_posts.show', compact('jobPost'));
     }
 
-   
-    public function update(JobPostRequest $request, $id)
+    public function edit(JobPost $jobPost)
     {
-        $data = $request->validated();
-        $this->jobPostRepository->update($id, $data);
-        return redirect()->route('job-posts.index');
+        return view('job_posts.edit', compact('jobPost'));
     }
 
-   
-    public function destroy($id)
+    public function update(JobPostRequest $request, JobPost $jobPost)
     {
-        $this->jobPostRepository->delete($id);
-        return redirect()->route('job-posts.index');
+        $jobPost->update($request->validated());
+        return redirect()->route('job-posts.index')
+            ->with('success', 'Job post updated successfully.');
+    }
+
+    public function destroy(JobPost $jobPost)
+    {
+        $jobPost->delete();
+        return redirect()->route('job-posts.index')
+            ->with('success', 'Job post deleted successfully.');
     }
 }
 
