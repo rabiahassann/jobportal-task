@@ -1,61 +1,67 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Repositories\JobApplicantRepository;
+use App\Models\JobPost;
+use App\Models\JobApplicant;
 use App\Http\Requests\JobApplicantRequest;
+use Illuminate\Http\Request;
 use App\Notifications\BulkJobApplicantEmail;
 use Illuminate\Support\Facades\Notification;
 
 class JobApplicantController extends Controller
 {
-    protected $jobApplicantRepo;
-
-    public function __construct(JobApplicantRepository $jobApplicantRepo)
+    public function __construct()
     {
-        $this->jobApplicantRepo = $jobApplicantRepo;
+        // $this->authorizeResource(JobApplicant::class, 'applicant');
     }
 
-    public function show($jobPost)
+
+    public function show(JobPost $jobPost)
     {
-        $applicants = $this->jobApplicantRepo->getAll($jobPost);
+      
+        $applicants = JobApplicant::where('job_post_id', $jobPost->id)
+            ->with('user')
+            ->get();
+            
         return view('job_applicants.index', compact('applicants', 'jobPost'));
     }
 
-    public function downloadCV($id)
+    public function downloadCV(JobApplicant $applicant)
     {
-        $applicant = $this->jobApplicantRepo->find($id);
-        if (!$applicant || !$applicant->cv_path) {
+        $this->authorize('downloadCV', $applicant);
+        
+        if (!$applicant->cv_path) {
             return back()->with('error', 'CV not found');
         }
         return response()->download(storage_path('app/' . $applicant->cv_path));
     }
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, JobApplicant $applicant)
     {
-        $applicant = $this->jobApplicantRepo->find($id);
-        if (!$applicant) {
-            return back()->with('error', 'Applicant not found');
-        }
-
-        $this->jobApplicantRepo->updateStatus($id, $request->status);
+        $this->authorize('update', $applicant);
+        
+        $applicant->update(['status' => $request->status]);
         return back()->with('success', 'Status updated successfully');
     }
 
     public function store(JobApplicantRequest $request)
     {
+        $jobPost = JobPost::findOrFail($request->job_post_id);
+        $this->authorize('apply', $jobPost);
+        
         try {
-            $this->jobApplicantRepo->store($request->validated());
-            return redirect()->back()->with('success', 'Applicant added successfully!');
+            JobApplicant::create($request->validated());
+            return redirect()->back()->with('success', 'Application submitted successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Something went wrong!');
         }
     }
 
-    public function sendBulkEmail(Request $request, $jobPost)
+    public function sendBulkEmail(Request $request, JobPost $jobPost)
     {
+        $this->authorize('sendBulkEmail', JobApplicant::class);
+        
         $request->validate([
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
@@ -63,13 +69,13 @@ class JobApplicantController extends Controller
             'applicants.*' => 'exists:job_applicants,id'
         ]);
 
-        $applicants = $this->jobApplicantRepo->getAll($jobPost)
+        $applicants = JobApplicant::where('job_post_id', $jobPost->id)
             ->whereIn('id', $request->applicants)
-            ->load('user');
+            ->with('user')
+            ->get();
 
         try {
             $notification = new BulkJobApplicantEmail($request->subject, $request->message);
-            
             Notification::send($applicants->pluck('user'), $notification);
 
             return redirect()->route('job-applicants.show', $jobPost)
@@ -80,7 +86,4 @@ class JobApplicantController extends Controller
                 ->with('error', 'Failed to queue emails. Please try again.');
         }
     }
-
-
-   
 }

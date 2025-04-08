@@ -14,6 +14,9 @@ class JobPost extends Model
         'salary_range',
         'description',
         'applied_before',
+        'category',
+        'job_type',
+        'location'
     ];
 
     protected static function boot()
